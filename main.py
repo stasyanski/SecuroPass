@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QSlider,
     QLabel,
+    QSizePolicy
     )
 
 from PySide6.QtCore import QSize, Qt
@@ -56,6 +57,7 @@ class Text(QLabel):
     def __init__(self, text="Text"):
         super(Text, self).__init__()
         self.setText(text)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # By default QLabel will expand to fill the available space, set size policy sets width and height to a fixed size, acting like a normal widget
 
 
 if __name__ == "__main__":
