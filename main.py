@@ -34,8 +34,6 @@ class MainWindow(QMainWindow):
 
         layout.addWidget(Slider(), 4, 0)
 
-        layout.addWidget(NullWidget(), 5,0)
-
 
 class Checkbox(QCheckBox):
     def __init__(self, text="Text"):
@@ -59,9 +57,6 @@ class Text(QLabel):
         super(Text, self).__init__()
         self.setText(text)
 
-class NullWidget(QWidget):                          # For spacing
-    def __init__(self):
-        super(NullWidget, self).__init__()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
