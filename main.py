@@ -22,6 +22,15 @@ from PySide6.QtWidgets import (
 from PySide6 import QtGui
 from PySide6.QtCore import Qt
 
+# --- Global values ---
+global uppercase, symbols, numbers, password_length, phrase           # Global scope values to be used in any func or class
+
+uppercase, symbols, numbers = True, True, True                        # Default values for the checkboxes, by default boxes are checked                        
+
+password_length = 16                                                  # Default value for password is 16
+phrase = None                                                         # Phrase is set to none initially
+
+
 # --- MainWindow and layouts ---
 
 class MainWindow(QMainWindow):
