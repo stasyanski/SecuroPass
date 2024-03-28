@@ -124,7 +124,7 @@ class ScrollArea(QScrollArea):
 # --- Mainloop ---
 
 if __name__ == "__main__":
-    app = QApplication()                                    # Create an application object, an instance of the QApplication class, QApplication manages the GUI application, sys.argv is needed as it is a Python list containing the command line args passed to the app, ensures proper functionality               
-    window = MainWindow(sys.argv)                           # Create an instance of the MainWindow class (the main window of the application, as the class defines it at the top of the script)           
+    app = QApplication(sys.argv)                            # Create an application object, an instance of the QApplication class, QApplication manages the GUI application, sys.argv is needed as it is a Python list containing the command line args passed to the app, ensures proper functionality               
+    window = MainWindow()                                   # Create an instance of the MainWindow class (the main window of the application, as the class defines it at the top of the script)           
     window.show()                                           # Makes the main window visible        
     app.exec()                                              # Start the pyside event loop, infinite loop which waits for user input
