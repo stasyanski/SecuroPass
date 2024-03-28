@@ -2,23 +2,21 @@
 
 # --- Importing the required from main.py ---
 
-from main import uppercase, symbols, numbers, password_length, phrase
+from main import pref
 
 # --- Check user preference ---
-
-def user_preference(uppercase, symbols, numbers, password_length, phrase):
+def user_preference(pref):
+    
+    
     preferences = {
-        "Uppercase": uppercase,
-        "Symbols": symbols,
-        "Numbers": numbers,
-        "Password length": password_length if password_length != 16 else "Default",
-        "Phrase": phrase if phrase is not None else "blank"
+        "Uppercase": pref.uppercase,
+        "Symbols": pref.symbols,
+        "Numbers": pref.numbers,
+        "Password length": pref.length if pref.length != 16 else "default",
+        "Phrase": pref.phrase if pref.phrase is not None else "blank"
     }
 
     for preference, value in preferences.items():
         print(f"{preference} is set to {value}")
 
-# --- Main function ---
-
-if __name__ == "__main__":
-    user_preference(uppercase, symbols, numbers, password_length, phrase)
+user_preference(pref)
