@@ -10,13 +10,12 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QSlider,
     QLabel,
-    QSizePolicy,
     QLineEdit,
     QVBoxLayout,
     QHBoxLayout,
     )
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import Qt
 
 class MainWindow(QMainWindow):
 
