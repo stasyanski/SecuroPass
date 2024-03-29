@@ -81,9 +81,15 @@ class MainWindow(QMainWindow):
 
         # --- Left add widgets - the left panel of the gui ---
         self.left.addWidget(Text("SecuroGen Password Generator:"))
-        self.left.addWidget(Checkbox("Use upper case letters"))
-        self.left.addWidget(Checkbox("Use symbols ($, #, /)"))                
-        self.left.addWidget(Checkbox("Use numbers"))
+
+        self.checkbox_uppercase = Checkbox("Use upper case letters")          # Create an instance of the Checkbox class and assign it to self.checkbox_uppercase
+        self.left.addWidget(self.checkbox_uppercase)                          # Add the self.checkbox_uppercase to the left panel of the gui
+
+        self.checkbox_symbols = Checkbox("Use symbols ($, #, /)")             
+        self.left.addWidget(self.checkbox_symbols)                            
+
+        self.checkbox_numbers = Checkbox("Use numbers")                       
+        self.left.addWidget(self.checkbox_numbers)                            
 
         # --- Password length realtime value ---
         self.slider_text = Text((f"Password Length:  {self.pref.length}"))      # Set the text of the slider and assign it to self.slider_text
@@ -95,7 +101,8 @@ class MainWindow(QMainWindow):
     
         # --- User information about phrase in password --- 
         self.left.addWidget(Text("Include this phrase in my password:\n(When including a phrase, the password generated will include that phrase.)"))
-        self.left.addWidget(Input("Enter a phrase here..."))
+        self.input_phrase = Input("Enter a phrase here...")                     
+        self.left.addWidget(self.input_phrase)
 
         # --- Bottomleft add widgets - the bottom left panel of the gui ---
         self.bottom_left.addWidget(Button("Generate Password"))
@@ -107,13 +114,33 @@ class MainWindow(QMainWindow):
         self.right.addWidget(Button("Add a password to SecuroVault"))
     
     def setup_signals(self):
+        self.checkbox_uppercase.stateChanged.connect(self.update_uppercase)     # Connect the checkbox_uppercase to the update_uppercase function, acting as a signal
+        self.checkbox_symbols.stateChanged.connect(self.update_symbols)         
+        self.checkbox_numbers.stateChanged.connect(self.update_numbers)
         self.slider.valueChanged.connect(self.update_length)                    # Connect the slider to the update_length function, acting as a signal
+        self.input_phrase.textChanged.connect(self.update_phrase)        
     
     # --- Signals and slots ---
+    def update_uppercase(self):
+        self.pref.uppercase = self.checkbox_uppercase.isChecked()
+        print(self.pref.uppercase)
+
+    def update_symbols(self):
+        self.pref.symbols = self.checkbox_symbols.isChecked()
+        print(self.pref.symbols)
+
+    def update_numbers(self):
+        self.pref.numbers = self.checkbox_numbers.isChecked()
+        print(self.pref.numbers)
+    
     def update_length(self):
         self.pref.length = self.slider.value()
         self.slider_text.setText(f"Password Length:  {self.pref.length}")
         print(self.pref.length)
+
+    def update_phrase(self):
+        self.pref.phrase =  self.input_phrase.text()
+        print(self.pref.phrase)     
 
 # --- Other widgets ---
 
