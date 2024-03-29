@@ -25,14 +25,15 @@ from PySide6.QtCore import Qt
 # --- CONSTANTS ---
 WINDOW_SIZE = (490, 400)                                               
 MAX_PASS_LEN = 48                                                      
-DEFAULT_PASS_LEN = 16                                                  
+DEFAULT_PASS_LEN = 16
+DEFAULT_CHECKBOX_STATE = True                                                  
 
 # --- Preferences values ---
 class Preferences:                                                     # Class to store the user preferences, rather than using global variables, much better practice
     def __init__(self):
-        self.uppercase = True
-        self.symbols = True
-        self.numbers = True
+        self.uppercase = DEFAULT_CHECKBOX_STATE
+        self.symbols = DEFAULT_CHECKBOX_STATE
+        self.numbers = DEFAULT_CHECKBOX_STATE
         self.length = DEFAULT_PASS_LEN
         self.phrase = None
 pref = Preferences()
@@ -112,6 +113,7 @@ class MainWindow(QMainWindow):
     def update_length(self):
         self.pref.length = self.slider.value()
         self.slider_text.setText(f"Password Length:  {self.pref.length}")
+        print(self.pref.length)
 
 # --- Other widgets ---
 
@@ -120,7 +122,7 @@ class Checkbox(QCheckBox):
         super(Checkbox, self).__init__()
 
         self.setText(text)                                  
-        self.setChecked(True)                               
+        self.setChecked(DEFAULT_CHECKBOX_STATE)                               
 
 class Slider(QSlider):
     def __init__(self):
