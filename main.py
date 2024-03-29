@@ -103,8 +103,8 @@ class MainWindow(QMainWindow):
     
     # --- Signals and slots ---
     def update_length(self):
-        length = self.slider.value()
-        self.slider_text.setText(f"Password Length:  {length}")
+        self.pref.length = self.slider.value()
+        self.slider_text.setText(f"Password Length:  {self.pref.length}")
 
 # --- Other widgets ---
 
