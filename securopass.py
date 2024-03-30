@@ -5,23 +5,23 @@
 import sys
 
 from PySide6.QtWidgets import (
-    QApplication, 
-    QMainWindow, 
-    QWidget, 
-    QGridLayout, 
-    QCheckBox,
-    QSlider,
-    QLabel,
-    QLineEdit,
+    QApplication,
+    QMainWindow,
+    QGridLayout,
+    QScrollArea,
     QVBoxLayout,
     QHBoxLayout,
-    QScrollArea,
     QPushButton,
+    QLineEdit,
+    QCheckBox,
+    QWidget,
+    QSlider,
+    QLabel,
     )
 
 from PySide6 import QtGui
-from PySide6.QtGui import QKeyEvent
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeyEvent, QKeySequence
 
 # --- CONSTANTS ---
 WINDOW_SIZE = (490, 400)                                               
@@ -180,7 +180,7 @@ class Input(QLineEdit):
         self.setMaxLength(PHRASE_MAX_LEN)                   # Set default max length of input field 
 
     def keyPressEvent(self, event: QKeyEvent) -> None:      # Function to return none input if key event is key space
-        if event.key() == Qt.Key_Space:
+        if event.key() == Qt.Key_Space or event.matches(QKeySequence.Paste):
             return
         super(Input,self).keyPressEvent(event)           
 
