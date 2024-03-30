@@ -2,8 +2,6 @@
 
 # --- Importing the required modules ---
 
-import sys
-
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -19,9 +17,15 @@ from PySide6.QtWidgets import (
     QLabel,
     )
 
-from PySide6 import QtGui
+from PySide6.QtGui import ( 
+    QKeySequence,
+    QKeyEvent,
+    )
+
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QKeyEvent, QKeySequence
+from PySide6 import QtGui
+import sys
+
 
 # --- CONSTANTS ---
 WINDOW_SIZE = (490, 400)                                               
@@ -178,11 +182,22 @@ class Input(QLineEdit):
         self.setPlaceholderText(text)                       
         self.setReadOnly(readonly)                          # Password will be printed here so it is read only
         self.setMaxLength(PHRASE_MAX_LEN)                   # Set default max length of input field 
-
+    
     def keyPressEvent(self, event: QKeyEvent) -> None:      # Function to return none input if key event is key space
-        if event.key() == Qt.Key_Space or event.matches(QKeySequence.Paste):
+        if event.key() == Qt.Key_Space:
             return
-        super(Input,self).keyPressEvent(event)           
+        if event.matches(QKeySequence.Paste):               # Return none if key sequence is ctrl+v
+            return
+        super(Input,self).keyPressEvent(event)
+
+    def dropEvent(self, event):                            # Disable drop event, preventing dropping text                    
+        pass
+
+    def dragEnterEvent(self, event):                       # Disable drag enter event, preventing dragging text        
+        pass
+    
+    def contextMenuEvent(self, event):                     # Disable context menu event, preventing user from accessing Paste option
+        pass    
 
 class Button(QPushButton):
     def __init__(self, text="Button"):
