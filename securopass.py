@@ -20,13 +20,15 @@ from PySide6.QtWidgets import (
     )
 
 from PySide6 import QtGui
+from PySide6.QtGui import QKeyEvent
 from PySide6.QtCore import Qt
 
 # --- CONSTANTS ---
 WINDOW_SIZE = (490, 400)                                               
 MAX_PASS_LEN = 48                                                      
 DEFAULT_PASS_LEN = 16
-DEFAULT_CHECKBOX_STATE = True                                                  
+DEFAULT_CHECKBOX_STATE = True
+PHRASE_MAX_LEN = 32                                                  
 
 # --- Preferences values ---
 class Preferences:                                                     # Class to store the user preferences, rather than using global variables, much better practice
@@ -100,9 +102,10 @@ class MainWindow(QMainWindow):
         self.left.addWidget(self.slider)                                        # Add the slider to the left panel  
     
         # --- User information about phrase in password --- 
-        self.left.addWidget(Text("Include this phrase in my password:\n(When including a phrase, the password generated will include that phrase.)"))
+        self.left.addWidget(Text("Include this phrase in my password:"))
         self.input_phrase = Input("Enter a phrase here...")                     
         self.left.addWidget(self.input_phrase)
+        self.left.addWidget(Text("Max 32 characters, spaces not allowed."))
 
         # --- Bottomleft add widgets - the bottom left panel of the gui ---
         self.bottom_left.addWidget(Button("Generate Password"))
@@ -174,12 +177,18 @@ class Input(QLineEdit):
         
         self.setPlaceholderText(text)                       
         self.setReadOnly(readonly)                          # Password will be printed here so it is read only
+        self.setMaxLength(PHRASE_MAX_LEN)                   # Set default max length of input field 
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:      # Function to return none input if key event is key space
+        if event.key() == Qt.Key_Space:
+            return
+        super(Input,self).keyPressEvent(event)           
 
 class Button(QPushButton):
     def __init__(self, text="Button"):
         super(Button, self).__init__()
 
-        self.setText(text)                                  # Set the text of the button (retrieve text from keyword argument)
+        self.setText(text)                                          # Set the text of the button (retrieve text from keyword argument)
 
 class ScrollArea(QScrollArea):
     def __init__(self):
