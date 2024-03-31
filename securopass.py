@@ -238,22 +238,22 @@ class SecuroPass:
         self.pref = pref
 
     def generate_password(self):
-        if self.pref.uppercase == True:
+        if self.pref.uppercase is True:
             bank = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
         else:
             bank = "abcdefghijklmnopqrstuvwxyz"
 
-        if self.pref.symbols == True:
+        if self.pref.symbols is True:
             bank += "!@#$%^&*()_+-=[]{}|;:,.<>?/!@#$%^&*()_+-=[]{}|;:,.<>?/"
 
-        if self.pref.numbers == True:
+        if self.pref.numbers is True:
             bank += "012345678901234567890123456789"
 
-        password = "".join(random.sample(bank, self.pref.length))
+        password = "".join(random.sample(bank, self.pref.length))           # random.sample returns a list of unique elements from the bank, join together to form and return a string
 
         if self.pref.phrase:
-            password = self.pref.phrase + '_' + password
-
+            password = self.pref.phrase + '_' + password                    # Concatenate phrase with password, use _ to separate them visually
+            password = password[0:self.pref.length]                         # Respect the user preffered length
         return password
         
 
