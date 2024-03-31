@@ -26,6 +26,8 @@ from PySide6.QtCore import Qt
 from PySide6 import QtGui
 import sys
 
+import random
+
 
 # --- CONSTANTS ---
 WINDOW_SIZE = (490, 400)                                               
@@ -51,6 +53,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         
         self.pref = pref                                                # Assign the pref to self.pref, otherwise it would be a local variable and not accessible outside of the __init__ function
+        self.securo_pass = SecuroPass(pref)                             # Create an instance of the SecuroPass class and assign it to self.securo_pass
 
         self.setWindowTitle("SecuroPass")
         self.setWindowIcon(QtGui.QIcon("icon.ico"))
@@ -91,7 +94,7 @@ class MainWindow(QMainWindow):
         self.checkbox_uppercase = Checkbox("Use upper case letters")          # Create an instance of the Checkbox class and assign it to self.checkbox_uppercase
         self.left.addWidget(self.checkbox_uppercase)                          # Add the self.checkbox_uppercase to the left panel of the gui
 
-        self.checkbox_symbols = Checkbox("Use symbols ($, #, /)")             
+        self.checkbox_symbols = Checkbox("Use symbols $, #, / etc.")             
         self.left.addWidget(self.checkbox_symbols)                            
 
         self.checkbox_numbers = Checkbox("Use numbers")                       
@@ -107,27 +110,33 @@ class MainWindow(QMainWindow):
     
         # --- User information about phrase in password --- 
         self.left.addWidget(Text("Include this phrase in my password:"))
-        self.input_phrase = Input("Enter a phrase here...")                     
+        self.input_phrase = (Input("Enter a phrase here..."))                     
         self.left.addWidget(self.input_phrase)
         self.left.addWidget(Text("Max 32 characters, spaces not allowed."))
 
         # --- Bottomleft add widgets - the bottom left panel of the gui ---
-        self.bottom_left.addWidget(Button("Generate Password"))
-        self.bottom_left.addWidget(Input("Password will appear here...", readonly=True))
+        self.gen_button = Button("Generate Password")                          
+        self.bottom_left.addWidget(self.gen_button)
+        self.password_label = Input("Password will appear here...", readonly=True)
+        self.bottom_left.addWidget(self.password_label)
 
         # --- Right add widgets - the right panel of the gui ---
         self.right.addWidget(Text("SecuroVault Saved Passwords:"))
         self.right.addWidget(ScrollArea())
         self.right.addWidget(Button("Add a password to SecuroVault"))
     
+    
+    
+    # --- Signals and slots ---
     def setup_signals(self):
         self.checkbox_uppercase.stateChanged.connect(self.update_uppercase)     # Connect the checkbox_uppercase to the update_uppercase function, acting as a signal
         self.checkbox_symbols.stateChanged.connect(self.update_symbols)         
         self.checkbox_numbers.stateChanged.connect(self.update_numbers)
         self.slider.valueChanged.connect(self.update_length)                    # Connect the slider to the update_length function, acting as a signal
-        self.input_phrase.textChanged.connect(self.update_phrase)        
+        self.input_phrase.textChanged.connect(self.update_phrase)
+        self.gen_button.clicked.connect(self.generate_password)                 
     
-    # --- Signals and slots ---
+    # --- Updates ---
     def update_uppercase(self):
         self.pref.uppercase = self.checkbox_uppercase.isChecked()
         print(self.pref.uppercase)
@@ -147,7 +156,15 @@ class MainWindow(QMainWindow):
 
     def update_phrase(self):
         self.pref.phrase =  self.input_phrase.text()
-        print(self.pref.phrase)     
+        print(self.pref.phrase)
+
+    def generate_password(self):
+        password = self.securo_pass.generate_password()
+        self.password_label.setText(password)
+        print(password)     
+
+
+
 
 # --- Other widgets ---
 
@@ -175,7 +192,7 @@ class Text(QLabel):
         self.setWordWrap(True)                              
         self.setAlignment(align)                            
 
-class Input(QLineEdit):
+class Input(QLineEdit):                                     # This class doesnt have great modularity, can be massively improved.
     def __init__(self, text="Text", readonly=False):
         super(Input, self).__init__()
         
@@ -210,6 +227,44 @@ class ScrollArea(QScrollArea):
         super(ScrollArea, self).__init__()
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)       # Set the vertical scrollbar policy to be always visible
+
+
+
+
+# --- SecuroPass logic ---
+
+class SecuroPass:
+    def __init__(self, pref):
+        self.pref = pref
+
+    def generate_password(self):
+        if self.pref.uppercase == True:
+            bank = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
+        else:
+            bank = "abcdefghijklmnopqrstuvwxyz"
+
+        if self.pref.symbols == True:
+            bank += "!@#$%^&*()_+-=[]{}|;:,.<>?/!@#$%^&*()_+-=[]{}|;:,.<>?/"
+
+        if self.pref.numbers == True:
+            bank += "012345678901234567890123456789"
+
+        password = "".join(random.sample(bank, self.pref.length))
+
+        if self.pref.phrase:
+            password = self.pref.phrase + '_' + password
+
+        return password
+        
+
+    def save_password(self):
+        pass
+
+    def load_passwords(self):
+        pass
+
+    def add_password(self):
+        pass
 
 
 # --- Mainloop ---
