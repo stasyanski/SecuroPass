@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
         # --- Bottomleft add widgets - the bottom left panel of the gui ---
         self.gen_button = Button("Generate Password")                          
         self.bottom_left.addWidget(self.gen_button)
-        self.password_label = Input("Password will appear here...", readonly=True)
+        self.password_label = Input("Password will appear here...", readonly=True, context_menu=False)
         self.bottom_left.addWidget(self.password_label)
 
         # --- Right add widgets - the right panel of the gui ---
@@ -193,12 +193,13 @@ class Text(QLabel):
         self.setAlignment(align)                            
 
 class Input(QLineEdit):                                     # This class doesnt have great modularity, can be massively improved.
-    def __init__(self, text="Text", readonly=False):
+    def __init__(self, text="Text", readonly=False, context_menu=True):
         super(Input, self).__init__()
         
         self.setPlaceholderText(text)                       
         self.setReadOnly(readonly)                          # Password will be printed here so it is read only
         self.setMaxLength(PHRASE_MAX_LEN)                   # Set default max length of input field 
+        self.context_menu = context_menu                    
     
     def keyPressEvent(self, event: QKeyEvent) -> None:      # Function to return none input if key event is key space
         if event.key() == Qt.Key_Space:
@@ -207,14 +208,20 @@ class Input(QLineEdit):                                     # This class doesnt 
             return
         super(Input,self).keyPressEvent(event)
 
-    def dropEvent(self, event):                            # Disable drop event, preventing dropping text                    
-        pass
+    def dropEvent(self, event):
+        if self.context_menu == True:
+            return
+        super(Input, self).dropEvent(event)
 
-    def dragEnterEvent(self, event):                       # Disable drag enter event, preventing dragging text        
-        pass
-    
-    def contextMenuEvent(self, event):                     # Disable context menu event, preventing user from accessing Paste option
-        pass    
+    def dragEnterEvent(self, event):
+        if self.context_menu == True:
+            return
+        super(Input, self).dragEnterEvent(event)
+        
+    def contextMenuEvent(self, event):
+        if self.context_menu == True:
+            return
+        super(Input, self).contextMenuEvent(event)
 
 class Button(QPushButton):
     def __init__(self, text="Button"):
