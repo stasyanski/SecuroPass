@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         
-        self.pref = Preferences()                                                # Assign the pref to self.pref, otherwise it would be a local variable and not accessible outside of the __init__ function
+        self.pref = Preferences()                                            # Assign the pref to self.pref, otherwise it would be a local variable and not accessible outside of the __init__ function
         self.securo_pass = SecuroPass(self.pref)                             # Create an instance of the SecuroPass class and assign it to self.securo_pass
 
         self.setWindowTitle("SecuroPass")
@@ -137,7 +137,7 @@ class MainWindow(QMainWindow):
     
     # --- Updates ---
     def update_uppercase(self):
-        self.pref.uppercase = self.checkbox_uppercase.isChecked()
+        self.pref.uppercase = self.checkbox_uppercase.isChecked()               # Update the uppercase preference to the state of the checkbox
 
     def update_symbols(self):
         self.pref.symbols = self.checkbox_symbols.isChecked()
@@ -236,20 +236,26 @@ class ScrollArea(QScrollArea):
 class SecuroPass:
     def __init__(self, pref):
         self.pref = pref
+        self.banks = {
+            'uppercase': "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz",
+            'lowercase': "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz",
+            'symbols': "!@#$%^&*()_+-=[]{}|;:,.<>?/!@#$%^&*()_+-=[]{}|;:,.<>?/",
+            'numbers': "012345678901234567890123456789"
+        }
 
     def generate_password(self):
         if self.pref.uppercase is True:
-            bank = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
+            self.bank = self.banks['uppercase']
         else:
-            bank = "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz"
+            self.bank = self.banks['lowercase']
 
         if self.pref.symbols is True:
-            bank += "!@#$%^&*()_+-=[]{}|;:,.<>?/!@#$%^&*()_+-=[]{}|;:,.<>?/"
+            self.bank += self.banks['symbols']
 
         if self.pref.numbers is True:
-            bank += "012345678901234567890123456789"
+            self.bank += self.banks['numbers']
 
-        password = "".join(random.sample(bank, self.pref.length))           # random.sample returns a list of unique elements from the bank, join together to form and return a string
+        password = "".join(random.sample(self.bank, self.pref.length))           # random.sample returns a list of unique elements from the bank, join together to form and return a string
 
         if self.pref.phrase:
             password = self.pref.phrase + '_' + password                    # Concatenate phrase with password, use _ to separate them visually
