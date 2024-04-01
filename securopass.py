@@ -44,16 +44,15 @@ class Preferences:                                                     # Class t
         self.numbers = DEFAULT_CHECKBOX_STATE
         self.length = DEFAULT_PASS_LEN
         self.phrase = None
-pref = Preferences()
 
 # --- MainWindow, layout and all widgets ---
 class MainWindow(QMainWindow):
 
-    def __init__(self, pref):
+    def __init__(self):
         super(MainWindow, self).__init__()
         
-        self.pref = pref                                                # Assign the pref to self.pref, otherwise it would be a local variable and not accessible outside of the __init__ function
-        self.securo_pass = SecuroPass(pref)                             # Create an instance of the SecuroPass class and assign it to self.securo_pass
+        self.pref = Preferences()                                                # Assign the pref to self.pref, otherwise it would be a local variable and not accessible outside of the __init__ function
+        self.securo_pass = SecuroPass(self.pref)                             # Create an instance of the SecuroPass class and assign it to self.securo_pass
 
         self.setWindowTitle("SecuroPass")
         self.setWindowIcon(QtGui.QIcon("icon.ico"))
@@ -278,6 +277,6 @@ class SecuroPass:
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)                            # Create an application object, an instance of the QApplication class, QApplication manages the GUI application, sys.argv is needed as it is a Python list containing the command line args passed to the app, ensures proper functionality               
-    window = MainWindow(pref)                               # Create an instance of the MainWindow class (the main window of the application, as the class defines it at the top of the script)           
+    window = MainWindow()                               # Create an instance of the MainWindow class (the main window of the application, as the class defines it at the top of the script)           
     window.show()                                           # Makes the main window visible        
     app.exec()                                              # Start the pyside event loop, infinite loop which waits for user input
