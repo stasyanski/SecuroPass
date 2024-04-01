@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QWidget,
     QSlider,
+    QDialog,
     QLabel,
     )
 
@@ -30,20 +31,21 @@ import random
 
 
 # --- CONSTANTS ---
-WINDOW_SIZE = (490, 400)                                               
-MAX_PASS_LEN = 48                                                      
-DEFAULT_PASS_LEN = 16
-DEFAULT_CHECKBOX_STATE = True
-PHRASE_MAX_LEN = 32                                                  
+WINDOW_SIZE             = (490, 400)
+DIALOG_SIZE             = (250, 90)                                               
+MAX_PASS_LEN            = 48                                                      
+DEFAULT_PASS_LEN        = 16
+DEFAULT_CHECKBOX_STATE  = True
+PHRASE_MAX_LEN          = 32                                                  
 
 # --- Preferences values ---
 class Preferences:                                                     # Class to store the user preferences, rather than using global variables, much better practice
     def __init__(self):
-        self.uppercase = DEFAULT_CHECKBOX_STATE
-        self.symbols = DEFAULT_CHECKBOX_STATE
-        self.numbers = DEFAULT_CHECKBOX_STATE
-        self.length = DEFAULT_PASS_LEN
-        self.phrase = None
+        self.uppercase  = DEFAULT_CHECKBOX_STATE
+        self.symbols    = DEFAULT_CHECKBOX_STATE
+        self.numbers    = DEFAULT_CHECKBOX_STATE
+        self.length     = DEFAULT_PASS_LEN
+        self.phrase     = None
 
 # --- MainWindow, layout and all widgets ---
 class MainWindow(QMainWindow):
@@ -53,6 +55,7 @@ class MainWindow(QMainWindow):
         
         self.pref = Preferences()                                            # Assign the pref to self.pref, otherwise it would be a local variable and not accessible outside of the __init__ function
         self.securo_pass = SecuroPass(self.pref)                             # Create an instance of the SecuroPass class and assign it to self.securo_pass
+        self.dialog = Dialog()                                               # Create an instance of the Dialog class and assign it to self.dialog
 
         self.setWindowTitle("SecuroPass")
         self.setWindowIcon(QtGui.QIcon("icon.ico"))
@@ -100,11 +103,11 @@ class MainWindow(QMainWindow):
         self.left.addWidget(self.checkbox_numbers)                            
 
         # --- Password length realtime value ---
-        self.slider_text = Text((f"Password Length:  {self.pref.length}"))      # Set the text of the slider and assign it to self.slider_text
+        self.slider_text = Text(f"Password Length:  {self.pref.length}")        # Set the text of the slider and assign it to self.slider_text
         self.left.addWidget(self.slider_text)                                   # Add the slider text to the left panel 
 
         # --- Password length slider ---
-        self.slider = Slider()                                                  # Create an instance of the Slider class
+        self.slider = (Slider())                                                # Create an instance of the Slider class
         self.left.addWidget(self.slider)                                        # Add the slider to the left panel  
     
         # --- User information about phrase in password --- 
@@ -114,15 +117,17 @@ class MainWindow(QMainWindow):
         self.left.addWidget(Text("Max 32 characters, spaces not allowed."))
 
         # --- Bottomleft add widgets - the bottom left panel of the gui ---
-        self.gen_button = Button("Generate Password")                          
+        self.gen_button = (Button("Generate Password"))                          
         self.bottom_left.addWidget(self.gen_button)
-        self.password_label = Input("Password will appear here...", readonly=True, context_menu=False)
+        self.password_label = (Input("Password will appear here...", readonly=True, context_menu=False))
         self.bottom_left.addWidget(self.password_label)
 
         # --- Right add widgets - the right panel of the gui ---
         self.right.addWidget(Text("SecuroVault Saved Passwords:"))
         self.right.addWidget(ScrollArea())
-        self.right.addWidget(Button("Add a password to SecuroVault"))
+
+        self.add_password = (Button("Add a password to SecuroVault"))
+        self.right.addWidget(self.add_password)
     
     
     
@@ -133,7 +138,8 @@ class MainWindow(QMainWindow):
         self.checkbox_numbers.stateChanged.connect(self.update_numbers)
         self.slider.valueChanged.connect(self.update_length)                    # Connect the slider to the update_length function, acting as a signal
         self.input_phrase.textChanged.connect(self.update_phrase)
-        self.gen_button.clicked.connect(self.generate_password)                 
+        self.gen_button.clicked.connect(self.generate_password)
+        self.add_password.clicked.connect(self.dialog.exec)                     # Executes dialog window class on press                
     
     # --- Updates ---
     def update_uppercase(self):
@@ -227,6 +233,25 @@ class ScrollArea(QScrollArea):
         super(ScrollArea, self).__init__()
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)       # Set the vertical scrollbar policy to be always visible
+
+class Dialog(QDialog):
+    def __init__(self):
+        super(Dialog, self).__init__()
+
+        self.setWindowTitle("Add a password")
+        self.setWindowIcon(QtGui.QIcon("icon.ico"))
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.input = Input("Username, website, service...")
+        self.layout.addWidget(self.input)
+
+        self.input = Input("Enter a password here...")
+        self.layout.addWidget(self.input)
+
+        self.add_button = Button("Add Password")
+        self.layout.addWidget(self.add_button)
 
 
 
