@@ -138,29 +138,23 @@ class MainWindow(QMainWindow):
     # --- Updates ---
     def update_uppercase(self):
         self.pref.uppercase = self.checkbox_uppercase.isChecked()
-        print(self.pref.uppercase)
 
     def update_symbols(self):
         self.pref.symbols = self.checkbox_symbols.isChecked()
-        print(self.pref.symbols)
 
     def update_numbers(self):
         self.pref.numbers = self.checkbox_numbers.isChecked()
-        print(self.pref.numbers)
     
     def update_length(self):
         self.pref.length = self.slider.value()
-        self.slider_text.setText(f"Password Length:  {self.pref.length}")
-        print(self.pref.length)
+        self.slider_text.setText(f"Password Length:  {self.pref.length}")       # Update the text of the slider to reflect the user's choice
 
     def update_phrase(self):
         self.pref.phrase =  self.input_phrase.text()
-        print(self.pref.phrase)
 
     def generate_password(self):
         password = self.securo_pass.generate_password()
-        self.password_label.setText(password)
-        print(password)     
+        self.password_label.setText(password)    
 
 
 
@@ -179,9 +173,9 @@ class Slider(QSlider):
         super(Slider, self).__init__()
         
         self.setMinimum(1)
-        self.setMaximum(MAX_PASS_LEN)                       # Maximum value of a password is constant
-        self.setSliderPosition(DEFAULT_PASS_LEN)            # Default value of the slider
-        self.setOrientation(Qt.Horizontal)                  # Set the slider
+        self.setMaximum(MAX_PASS_LEN)                       
+        self.setSliderPosition(DEFAULT_PASS_LEN)            
+        self.setOrientation(Qt.Horizontal)                  
 
 class Text(QLabel):
     def __init__(self, text="Text", align=Qt.AlignLeft):    # Align the text to the left (default value), unless a value is specified 
@@ -191,13 +185,13 @@ class Text(QLabel):
         self.setWordWrap(True)                              
         self.setAlignment(align)                            
 
-class Input(QLineEdit):                                     # This class doesnt have great modularity, can be massively improved.
+class Input(QLineEdit):                                     
     def __init__(self, text="Text", readonly=False, context_menu=True):
         super(Input, self).__init__()
         
         self.setPlaceholderText(text)                       
         self.setReadOnly(readonly)                          # Password will be printed here so it is read only
-        self.setMaxLength(PHRASE_MAX_LEN)                   # Set default max length of input field 
+        self.setMaxLength(PHRASE_MAX_LEN)                   
         self.context_menu = context_menu                    
     
     def keyPressEvent(self, event: QKeyEvent) -> None:      # Function to return none input if key event is key space
@@ -247,7 +241,7 @@ class SecuroPass:
         if self.pref.uppercase is True:
             bank = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
         else:
-            bank = "abcdefghijklmnopqrstuvwxyz"
+            bank = "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz"
 
         if self.pref.symbols is True:
             bank += "!@#$%^&*()_+-=[]{}|;:,.<>?/!@#$%^&*()_+-=[]{}|;:,.<>?/"
@@ -259,7 +253,7 @@ class SecuroPass:
 
         if self.pref.phrase:
             password = self.pref.phrase + '_' + password                    # Concatenate phrase with password, use _ to separate them visually
-            password = password[0:self.pref.length]                         # Respect the user preffered length
+            password = password[0:self.pref.length]                         # Respect the user preferred length
         return password
         
 
@@ -277,6 +271,6 @@ class SecuroPass:
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)                            # Create an application object, an instance of the QApplication class, QApplication manages the GUI application, sys.argv is needed as it is a Python list containing the command line args passed to the app, ensures proper functionality               
-    window = MainWindow()                               # Create an instance of the MainWindow class (the main window of the application, as the class defines it at the top of the script)           
+    window = MainWindow()                                   # Create an instance of the MainWindow class (the main window of the application, as the class defines it at the top of the script)           
     window.show()                                           # Makes the main window visible        
     app.exec()                                              # Start the pyside event loop, infinite loop which waits for user input
