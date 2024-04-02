@@ -34,10 +34,10 @@ import random
 # --- CONSTANTS ---
 WINDOW_SIZE             = (490, 400)
 DIALOG_SIZE             = (260, 160)                                               
-MAX_PASS_LEN            = 48                                                      
+MAX_PASS_LEN            = 48
+PHRASE_MAX_LEN          = 32                                                        
 DEFAULT_PASS_LEN        = 16
-DEFAULT_CHECKBOX_STATE  = True
-PHRASE_MAX_LEN          = 32                                                  
+DEFAULT_CHECKBOX_STATE  = True                                                  
 
 # --- Preferences values ---
 class Preferences:                                                     # Class to store the user preferences, rather than using global variables, much better practice
@@ -50,7 +50,7 @@ class Preferences:                                                     # Class t
 
 # --- MainWindow, layout and all widgets ---
 class MainWindow(QMainWindow):
-
+    
     def __init__(self):
         super(MainWindow, self).__init__()
         
@@ -113,14 +113,14 @@ class MainWindow(QMainWindow):
     
         # --- User information about phrase in password --- 
         self.left.addWidget(Text("Include this phrase in my password:", align=Qt.AlignLeft, wrap=False))
-        self.input_phrase = (Input("Enter a phrase here...", readonly=False, space_allowed=False, context_menu=False))                     
+        self.input_phrase = Input("Enter a phrase here...", readonly=False, space_allowed=False, context_menu=False, max_len=PHRASE_MAX_LEN)                    
         self.left.addWidget(self.input_phrase)
         self.left.addWidget(Text("Max 32 characters, spaces not allowed.", align=Qt.AlignLeft, wrap=False))
 
         # --- Bottomleft add widgets - the bottom left panel of the gui ---
-        self.gen_button = (Button("Generate Password"))                          
+        self.gen_button = Button("Generate Password")                          
         self.bottom_left.addWidget(self.gen_button)
-        self.password_label = (Input("Password will appear here...", readonly=True, space_allowed=False, context_menu=False))
+        self.password_label = Input("Password will appear here...", readonly=True, space_allowed=False, context_menu=True, max_len=MAX_PASS_LEN)
         self.bottom_left.addWidget(self.password_label)
 
         # --- Right add widgets - the right panel of the gui ---
@@ -141,7 +141,8 @@ class MainWindow(QMainWindow):
         self.slider.valueChanged.connect(self.update_length)                    # Connect the slider to the update_length function, acting as a signal
         self.input_phrase.textChanged.connect(self.update_phrase)
         self.gen_button.clicked.connect(self.generate_password)
-        self.add_password.clicked.connect(self.dialog.exec)                     # Executes dialog window class on press                
+        self.add_password.clicked.connect(self.dialog.exec)                     # Executes dialog window class on press
+        self.dialog.save_password.clicked.connect(self.securo_pass.save_password)               
     
     # --- Updates ---
     def update_uppercase(self):
@@ -194,12 +195,12 @@ class Text(QLabel):
         self.setWordWrap(wrap)                          # Wrap the text if it exceeds the width of the label                          
 
 class Input(QLineEdit):                                     
-    def __init__(self, text, readonly, space_allowed, context_menu):
+    def __init__(self, text, readonly, space_allowed, context_menu, max_len):
         super(Input, self).__init__()
         
         self.setPlaceholderText(text)                       
         self.setReadOnly(readonly)                          # Password will be printed here so it is read only
-        self.setMaxLength(PHRASE_MAX_LEN)                   
+        self.setMaxLength(max_len)                   
         self.context_menu = context_menu
         self.space_allowed = space_allowed                
     
@@ -252,15 +253,18 @@ class Dialog(QDialog):
 
         
         self.layout.addWidget(Text("What's this password linked to?", align=Qt.AlignLeft, wrap=False))
-        self.input = Input("Username, website, service...", readonly=False, space_allowed=True, context_menu=True)
-        self.layout.addWidget(self.input)
+        self.input_user = Input("Username, website, service...", readonly=False, space_allowed=True, context_menu=True, max_len=PHRASE_MAX_LEN)
+        self.layout.addWidget(self.input_user)
 
         self.layout.addWidget(Text("Add a password to SecuroVault:", align=Qt.AlignLeft, wrap=False))
-        self.input = Input("Enter a password here...", readonly=False, space_allowed=False, context_menu=True)
-        self.layout.addWidget(self.input)
+        self.input_pass = Input("Enter a password here...", readonly=False, space_allowed=True, context_menu=True, max_len=MAX_PASS_LEN)
 
-        self.add_button = Button("Add Password")
-        self.layout.addWidget(self.add_button)
+        # For testing purposes, space_allowed is set to True for password. Need to write a func that takes in input and returns it without any spaces, better than disabling user input / ctrl+v / drag and drop / context menu / etc... which limits  functionality
+
+        self.layout.addWidget(self.input_pass)
+
+        self.save_password = Button("Add Password")
+        self.layout.addWidget(self.save_password)
 
 
 
@@ -298,13 +302,7 @@ class SecuroPass:
         
 
     def save_password(self):
-        pass
-
-    def load_passwords(self):
-        pass
-
-    def add_password(self):
-        pass
+        print("connected")
 
 
 # --- Mainloop ---
