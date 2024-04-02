@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QVBoxLayout,
     QHBoxLayout,
+    QSizePolicy,
     QPushButton,
     QLineEdit,
     QCheckBox,
@@ -32,7 +33,7 @@ import random
 
 # --- CONSTANTS ---
 WINDOW_SIZE             = (490, 400)
-DIALOG_SIZE             = (250, 90)                                               
+DIALOG_SIZE             = (260, 160)                                               
 MAX_PASS_LEN            = 48                                                      
 DEFAULT_PASS_LEN        = 16
 DEFAULT_CHECKBOX_STATE  = True
@@ -88,10 +89,10 @@ class MainWindow(QMainWindow):
 
     def setup_widgets(self):
         # --- Top add widgets - the greeting text ---
-        self.top.addWidget(Text("Hi (user), welcome to SecuroPass, free-and-open-source software to generate and manage your passwords.", align=Qt.AlignCenter))
+        self.top.addWidget(Text("Hi (user), welcome to SecuroPass, free-and-open-source software to generate and manage your passwords.", align=Qt.AlignCenter, wrap=True))
 
         # --- Left add widgets - the left panel of the gui ---
-        self.left.addWidget(Text("SecuroGen Password Generator:"))
+        self.left.addWidget(Text("SecuroGen Password Generator:", align=Qt.AlignLeft, wrap=False))
 
         self.checkbox_uppercase = Checkbox("Use upper case letters")          # Create an instance of the Checkbox class and assign it to self.checkbox_uppercase
         self.left.addWidget(self.checkbox_uppercase)                          # Add the self.checkbox_uppercase to the left panel of the gui
@@ -103,7 +104,7 @@ class MainWindow(QMainWindow):
         self.left.addWidget(self.checkbox_numbers)                            
 
         # --- Password length realtime value ---
-        self.slider_text = Text(f"Password Length:  {self.pref.length}")        # Set the text of the slider and assign it to self.slider_text
+        self.slider_text = Text(f"Password Length:  {self.pref.length}", align=Qt.AlignLeft, wrap=False)        # Set the text of the slider and assign it to self.slider_text
         self.left.addWidget(self.slider_text)                                   # Add the slider text to the left panel 
 
         # --- Password length slider ---
@@ -111,19 +112,19 @@ class MainWindow(QMainWindow):
         self.left.addWidget(self.slider)                                        # Add the slider to the left panel  
     
         # --- User information about phrase in password --- 
-        self.left.addWidget(Text("Include this phrase in my password:"))
-        self.input_phrase = (Input("Enter a phrase here..."))                     
+        self.left.addWidget(Text("Include this phrase in my password:", align=Qt.AlignLeft, wrap=False))
+        self.input_phrase = (Input("Enter a phrase here...", readonly=False, space_allowed=False, context_menu=False))                     
         self.left.addWidget(self.input_phrase)
-        self.left.addWidget(Text("Max 32 characters, spaces not allowed."))
+        self.left.addWidget(Text("Max 32 characters, spaces not allowed.", align=Qt.AlignLeft, wrap=False))
 
         # --- Bottomleft add widgets - the bottom left panel of the gui ---
         self.gen_button = (Button("Generate Password"))                          
         self.bottom_left.addWidget(self.gen_button)
-        self.password_label = (Input("Password will appear here...", readonly=True, context_menu=False))
+        self.password_label = (Input("Password will appear here...", readonly=True, space_allowed=False, context_menu=False))
         self.bottom_left.addWidget(self.password_label)
 
         # --- Right add widgets - the right panel of the gui ---
-        self.right.addWidget(Text("SecuroVault Saved Passwords:"))
+        self.right.addWidget(Text("SecuroVault Saved Passwords:", align=Qt.AlignLeft, wrap=False))
         self.right.addWidget(ScrollArea())
 
         self.add_password = (Button("Add a password to SecuroVault"))
@@ -131,6 +132,7 @@ class MainWindow(QMainWindow):
     
     
     
+
     # --- Signals and slots ---
     def setup_signals(self):
         self.checkbox_uppercase.stateChanged.connect(self.update_uppercase)     # Connect the checkbox_uppercase to the update_uppercase function, acting as a signal
@@ -168,7 +170,7 @@ class MainWindow(QMainWindow):
 # --- Other widgets ---
 
 class Checkbox(QCheckBox):
-    def __init__(self, text="Text"):
+    def __init__(self, text):
         super(Checkbox, self).__init__()
 
         self.setText(text)                                  
@@ -184,46 +186,48 @@ class Slider(QSlider):
         self.setOrientation(Qt.Horizontal)                  
 
 class Text(QLabel):
-    def __init__(self, text="Text", align=Qt.AlignLeft):    # Align the text to the left (default value), unless a value is specified 
+    def __init__(self, text, align, wrap):    # Align the text to the left (default value), unless a value is specified 
         super(Text, self).__init__()
         
-        self.setText(text)
-        self.setWordWrap(True)                              
-        self.setAlignment(align)                            
+        self.setText(text)                             
+        self.setAlignment(align)  
+        self.setWordWrap(wrap)                          # Wrap the text if it exceeds the width of the label                          
 
 class Input(QLineEdit):                                     
-    def __init__(self, text="Text", readonly=False, context_menu=True):
+    def __init__(self, text, readonly, space_allowed, context_menu):
         super(Input, self).__init__()
         
         self.setPlaceholderText(text)                       
         self.setReadOnly(readonly)                          # Password will be printed here so it is read only
         self.setMaxLength(PHRASE_MAX_LEN)                   
-        self.context_menu = context_menu                    
+        self.context_menu = context_menu
+        self.space_allowed = space_allowed                
     
     def keyPressEvent(self, event: QKeyEvent) -> None:      # Function to return none input if key event is key space
-        if event.key() == Qt.Key_Space:
-            return
-        if event.matches(QKeySequence.Paste):               # Return none if key sequence is ctrl+v
-            return
+        if self.space_allowed==False:
+            if event.key() == Qt.Key_Space:
+                return
+            if event.matches(QKeySequence.Paste):               # Return none if key sequence is ctrl+v
+                return
         super(Input,self).keyPressEvent(event)
 
     def dropEvent(self, event):
-        if self.context_menu == True:
+        if self.context_menu == False:
             return
         super(Input, self).dropEvent(event)
 
     def dragEnterEvent(self, event):
-        if self.context_menu == True:
+        if self.context_menu == False:
             return
         super(Input, self).dragEnterEvent(event)
         
     def contextMenuEvent(self, event):
-        if self.context_menu == True:
+        if self.context_menu == False:
             return
         super(Input, self).contextMenuEvent(event)
 
 class Button(QPushButton):
-    def __init__(self, text="Button"):
+    def __init__(self, text):
         super(Button, self).__init__()
 
         self.setText(text)                                          # Set the text of the button (retrieve text from keyword argument)
@@ -240,14 +244,19 @@ class Dialog(QDialog):
 
         self.setWindowTitle("Add a password")
         self.setWindowIcon(QtGui.QIcon("icon.ico"))
+        self.setFixedSize(*DIALOG_SIZE)
 
         self.layout = QVBoxLayout()
+        self.layout.setSpacing(10)
         self.setLayout(self.layout)
 
-        self.input = Input("Username, website, service...")
+        
+        self.layout.addWidget(Text("What's this password linked to?", align=Qt.AlignLeft, wrap=False))
+        self.input = Input("Username, website, service...", readonly=False, space_allowed=True, context_menu=True)
         self.layout.addWidget(self.input)
 
-        self.input = Input("Enter a password here...")
+        self.layout.addWidget(Text("Add a password to SecuroVault:", align=Qt.AlignLeft, wrap=False))
+        self.input = Input("Enter a password here...", readonly=False, space_allowed=False, context_menu=True)
         self.layout.addWidget(self.input)
 
         self.add_button = Button("Add Password")
