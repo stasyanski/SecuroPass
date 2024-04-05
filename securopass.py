@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
         self.input_phrase.textChanged.connect(self.update_phrase)
         self.gen_button.clicked.connect(self.generate_password)
         self.add_password.clicked.connect(self.dialog.exec)                     # Executes dialog window class on press
-        self.dialog.save_password.clicked.connect(self.securo_pass.save_password)               
+        self.dialog.save_password.clicked.connect(self.securo_pass.save_password)     
     
     # --- Updates ---
     def update_uppercase(self):
@@ -240,6 +240,11 @@ class ScrollArea(QScrollArea):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)       # Set the vertical scrollbar policy to be always visible
 
 class Dialog(QDialog):
+    def sanitize_input(self):
+        self.current_text = self.input_pass.text()
+        self.sanitized_text = self.current_text.replace(" ", "")    # Replace spaces with nothing, not allow to store password with space
+        self.input_pass.setText(self.sanitized_text)
+    
     def __init__(self):
         super(Dialog, self).__init__()
 
@@ -258,10 +263,10 @@ class Dialog(QDialog):
 
         self.layout.addWidget(Text("Add a password to SecuroVault:", align=Qt.AlignLeft, wrap=False))
         self.input_pass = Input("Enter a password here...", readonly=False, space_allowed=True, context_menu=True, max_len=MAX_PASS_LEN)
+        self.input_pass.textChanged.connect(self.sanitize_input)
+        self.layout.addWidget(self.input_pass)
 
         # For testing purposes, space_allowed is set to True for password. Need to write a func that takes in input and returns it without any spaces, better than disabling user input / ctrl+v / drag and drop / context menu / etc... which limits  functionality
-
-        self.layout.addWidget(self.input_pass)
 
         self.save_password = Button("Add Password")
         self.layout.addWidget(self.save_password)
