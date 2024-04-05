@@ -113,14 +113,14 @@ class MainWindow(QMainWindow):
     
         # --- User information about phrase in password --- 
         self.left.addWidget(Text("Include this phrase in my password:", align=Qt.AlignLeft, wrap=False))
-        self.input_phrase = Input("Enter a phrase here...", readonly=False, space_allowed=False, context_menu=False, max_len=PHRASE_MAX_LEN)                    
+        self.input_phrase = Input("Enter a phrase here...", readonly=False, max_len=PHRASE_MAX_LEN)                    
         self.left.addWidget(self.input_phrase)
         self.left.addWidget(Text("Max 32 characters, spaces not allowed.", align=Qt.AlignLeft, wrap=False))
 
         # --- Bottomleft add widgets - the bottom left panel of the gui ---
         self.gen_button = Button("Generate Password")                          
         self.bottom_left.addWidget(self.gen_button)
-        self.password_label = Input("Password will appear here...", readonly=True, space_allowed=False, context_menu=True, max_len=MAX_PASS_LEN)
+        self.password_label = Input("Password will appear here...", readonly=True, max_len=MAX_PASS_LEN)
         self.bottom_left.addWidget(self.password_label)
 
         # --- Right add widgets - the right panel of the gui ---
@@ -135,6 +135,8 @@ class MainWindow(QMainWindow):
 
     # --- Signals and slots ---
     def setup_signals(self):
+        self.input_phrase.textChanged.connect(self.sanitize_input)
+
         self.checkbox_uppercase.stateChanged.connect(self.update_uppercase)     # Connect the checkbox_uppercase to the update_uppercase function, acting as a signal
         self.checkbox_symbols.stateChanged.connect(self.update_symbols)         
         self.checkbox_numbers.stateChanged.connect(self.update_numbers)
@@ -145,6 +147,11 @@ class MainWindow(QMainWindow):
         self.dialog.save_password.clicked.connect(self.securo_pass.save_password)     
     
     # --- Updates ---
+    def sanitize_input(self):
+        self.current_text = self.input_phrase.text()
+        self.sanitized_text = self.current_text.replace(" ", "")    # Replace spaces with nothing, not allow to store password with space
+        self.input_phrase.setText(self.sanitized_text)   
+
     def update_uppercase(self):
         self.pref.uppercase = self.checkbox_uppercase.isChecked()               # Update the uppercase preference to the state of the checkbox
 
@@ -163,7 +170,7 @@ class MainWindow(QMainWindow):
 
     def generate_password(self):
         password = self.securo_pass.generate_password()
-        self.password_label.setText(password)    
+        self.password_label.setText(password) 
 
 
 
@@ -194,31 +201,33 @@ class Text(QLabel):
         self.setAlignment(align)  
         self.setWordWrap(wrap)                          # Wrap the text if it exceeds the width of the label                          
 
-class Input(QLineEdit):                                     
-    def __init__(self, text, readonly, space_allowed, context_menu, max_len):
+class Input(QLineEdit):                                         
+    def __init__(self, text, readonly, max_len):
         super(Input, self).__init__()
         
         self.setPlaceholderText(text)                       
         self.setReadOnly(readonly)                          # Password will be printed here so it is read only
         self.setMaxLength(max_len)                   
-        self.context_menu = context_menu
-        self.space_allowed = space_allowed                
+
     
-    def keyPressEvent(self, event: QKeyEvent) -> None:      # Function to return none input if key event is key space
+    """
+    def keyPressEvent(self, event: QKeyEvent) -> None:          # Function to return none input if key event is key space
         if self.space_allowed==False:
             if event.key() == Qt.Key_Space:
                 return
             if event.matches(QKeySequence.Paste):               # Return none if key sequence is ctrl+v
                 return
         super(Input,self).keyPressEvent(event)
-
+    """
+    
+    """
     def dropEvent(self, event):
         if self.context_menu == False:
             return
         super(Input, self).dropEvent(event)
 
     def dragEnterEvent(self, event):
-        if self.context_menu == False:
+        if self.context_menu == False:                            No longer used context menu code
             return
         super(Input, self).dragEnterEvent(event)
         
@@ -226,6 +235,7 @@ class Input(QLineEdit):
         if self.context_menu == False:
             return
         super(Input, self).contextMenuEvent(event)
+    """
 
 class Button(QPushButton):
     def __init__(self, text):
@@ -258,11 +268,11 @@ class Dialog(QDialog):
 
         
         self.layout.addWidget(Text("What's this password linked to?", align=Qt.AlignLeft, wrap=False))
-        self.input_user = Input("Username, website, service...", readonly=False, space_allowed=True, context_menu=True, max_len=PHRASE_MAX_LEN)
+        self.input_user = Input("Username, website, service...", readonly=False, max_len=PHRASE_MAX_LEN)
         self.layout.addWidget(self.input_user)
 
         self.layout.addWidget(Text("Add a password to SecuroVault:", align=Qt.AlignLeft, wrap=False))
-        self.input_pass = Input("Enter a password here...", readonly=False, space_allowed=True, context_menu=True, max_len=MAX_PASS_LEN)
+        self.input_pass = Input("Enter a password here...", readonly=False, max_len=MAX_PASS_LEN)
         self.input_pass.textChanged.connect(self.sanitize_input)
         self.layout.addWidget(self.input_pass)
 
