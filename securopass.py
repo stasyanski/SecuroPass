@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QVBoxLayout,
     QHBoxLayout,
-    QSizePolicy,
     QPushButton,
     QLineEdit,
     QCheckBox,
@@ -19,15 +18,10 @@ from PySide6.QtWidgets import (
     QLabel,
     )
 
-from PySide6.QtGui import ( 
-    QKeySequence,
-    QKeyEvent,
-    )
-
 from PySide6.QtCore import Qt
 from PySide6 import QtGui
-import sys
 
+import sys
 import random
 
 
@@ -209,6 +203,13 @@ class Input(QLineEdit):
         self.setReadOnly(readonly)                          # Password will be printed here so it is read only
         self.setMaxLength(max_len)                   
 
+
+    """
+    from PySide6.QtGui import ( 
+        QKeySequence,
+        QKeyEvent,
+        )
+    """
     
     """
     def keyPressEvent(self, event: QKeyEvent) -> None:          # Function to return none input if key event is key space
@@ -275,8 +276,6 @@ class Dialog(QDialog):
         self.input_pass = Input("Enter a password here...", readonly=False, max_len=MAX_PASS_LEN)
         self.input_pass.textChanged.connect(self.sanitize_input)
         self.layout.addWidget(self.input_pass)
-
-        # For testing purposes, space_allowed is set to True for password. Need to write a func that takes in input and returns it without any spaces, better than disabling user input / ctrl+v / drag and drop / context menu / etc... which limits  functionality
 
         self.save_password = Button("Add Password")
         self.layout.addWidget(self.save_password)
