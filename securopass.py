@@ -18,10 +18,14 @@ from PySide6.QtWidgets import (
     QLabel,
     )
 
+from cryptography.fernet import Fernet
+from json import JSONDecodeError
 from PySide6.QtCore import Qt
 from PySide6 import QtGui
 
+import os
 import sys
+import json
 import random
 
 
@@ -119,7 +123,9 @@ class MainWindow(QMainWindow):
 
         # --- Right add widgets - the right panel of the gui ---
         self.right.addWidget(Text("SecuroVault Saved Passwords:", align=Qt.AlignLeft, wrap=False))
-        self.right.addWidget(ScrollArea())
+
+        self.scroll_area = ScrollArea()
+        self.right.addWidget(self.scroll_area)
 
         self.add_password = (Button("Add a password to SecuroVault"))
         self.right.addWidget(self.add_password)
@@ -138,7 +144,8 @@ class MainWindow(QMainWindow):
         self.input_phrase.textChanged.connect(self.update_phrase)
         self.gen_button.clicked.connect(self.generate_password)
         self.add_password.clicked.connect(self.dialog.exec)                     # Executes dialog window class on press
-        self.dialog.save_password.clicked.connect(self.securo_pass.save_password)     
+        self.dialog.save_password.clicked.connect(lambda: self.securo_pass.encrypt_to_json(self.dialog.input_user.text(), self.dialog.input_pass.text()))                                                                # Pass user and password to encrypt and store in json                   
+        self.dialog.save_password.clicked.connect(self.dialog.close)            # Close the dialog window after saving the password
     
     # --- Updates ---
     def sanitize_input(self):
@@ -285,7 +292,7 @@ class Dialog(QDialog):
 
 # --- SecuroPass logic ---
 
-class SecuroPass:
+class SecuroPass():
     def __init__(self, pref):
         self.pref = pref
         self.banks = {
@@ -294,6 +301,8 @@ class SecuroPass:
             'symbols': "!@#$%^&*()_+-=[]{}|;:,.<>?/!@#$%^&*()_+-=[]{}|;:,.<>?/",
             'numbers': "012345678901234567890123456789"
         }
+        self.key = None
+        self.cipher_suite = None
 
     def generate_password(self):
         if self.pref.uppercase is True:
@@ -307,17 +316,47 @@ class SecuroPass:
         if self.pref.numbers is True:
             self.bank += self.banks['numbers']
 
-        password = "".join(random.sample(self.bank, self.pref.length))           # random.sample returns a list of unique elements from the bank, join together to form and return a string
+        password = "".join(random.sample(self.bank, self.pref.length))
 
         if self.pref.phrase:
-            password = self.pref.phrase + '_' + password                    # Concatenate phrase with password, use _ to separate them visually
-            password = password[0:self.pref.length]                         # Respect the user preferred length
+            password = self.pref.phrase + '_' + password
+            password = password[0:self.pref.length]
         return password
+
+    def encrypt_to_json(self, user, password: str) -> None:
+        self.key = Fernet.generate_key()
+        os.environ[user] = self.key.decode()
+        self.cipher = Fernet(self.key)
         
+        encrypted_password = self.cipher.encrypt(password.encode()).decode()
 
-    def save_password(self):
-        print("connected")
+        try:
+            with open('sp.json', 'r') as f:
+                data = json.load(f)
+        except (FileNotFoundError, JSONDecodeError):
+            data = {}
 
+        data[user] = encrypted_password
+
+        with open('sp.json', 'w') as f:
+            json.dump(data, f)
+
+    def decrypt_from_json(self, user) -> str:
+        self.key = os.environ.get(user).encode()
+        self.cipher = Fernet(self.key)
+
+        with open('sp.json', 'r') as f:
+            data = json.load(f)
+            encrypted_password = data.get(user)
+        
+        if encrypted_password:
+            password = self.cipher.decrypt(encrypted_password.encode()).decode()
+            return password
+        else:
+            return None
+    
+    def delete_from_json(self, user) -> None:
+        pass
 
 # --- Mainloop ---
 
