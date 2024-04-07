@@ -144,8 +144,9 @@ class MainWindow(QMainWindow):
         self.input_phrase.textChanged.connect(self.update_phrase)
         self.gen_button.clicked.connect(self.generate_password)
         self.add_password.clicked.connect(self.dialog.exec)                     # Executes dialog window class on press
-        self.dialog.save_password.clicked.connect(lambda: self.securo_pass.encrypt_to_json(self.dialog.input_user.text(), self.dialog.input_pass.text()))                                                                # Pass user and password to encrypt and store in json                   
-        self.dialog.save_password.clicked.connect(self.dialog.close)            # Close the dialog window after saving the password
+        self.dialog.save_password.clicked.connect(lambda: self.securo_pass.encrypt_to_json(self.dialog.input_user.text(), self.dialog.input_pass.text()))                                                                            # Pass user and password to encrypt and store in json                   
+        self.dialog.save_password.clicked.connect(self.dialog.close)                    # Close the dialog window after saving the password
+        self.dialog.save_password.clicked.connect(self.scroll_area.new_json_data)       # Update the scroll area with the new password
     
     # --- Updates ---
     def sanitize_input(self):
@@ -172,6 +173,7 @@ class MainWindow(QMainWindow):
     def generate_password(self):
         password = self.securo_pass.generate_password()
         self.password_label.setText(password) 
+
 
 
 
@@ -250,12 +252,55 @@ class Button(QPushButton):
         super(Button, self).__init__()
 
         self.setText(text)                                          # Set the text of the button (retrieve text from keyword argument)
-
+        
 class ScrollArea(QScrollArea):
     def __init__(self):
         super(ScrollArea, self).__init__()
 
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)       # Set the vertical scrollbar policy to be always visible
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Set the vertical scrollbar policy to be always visible
+
+        # Initialize the scroll widget and layout
+        self.scroll_widget = QWidget()                              
+        self.scroll_layout = QVBoxLayout()                          
+        self.scroll_widget.setLayout(self.scroll_layout)
+
+        try:
+            with open('sp.json', 'r') as f:
+                data = json.load(f)
+        except json.JSONDecodeError:
+            data = {}
+
+        for item in data:
+            button = QPushButton(item)
+            self.scroll_layout.addWidget(button)
+
+        self.setWidget(self.scroll_widget)
+
+    """
+    This is poor practice, I have tried to make it better,
+    deleting the widget and recreating it with new data is slow, 
+    but when I tried to update the data in the widget, it did not work, 
+    so i resorted to this, the buttons and widget were being squished 
+    down no matter what i tried and it was not properly updating the
+    data.
+    """
+    def new_json_data(self):
+        self.scroll_widget.deleteLater()
+        self.scroll_widget = QWidget()                         
+        self.scroll_layout = QVBoxLayout()
+        self.scroll_widget.setLayout(self.scroll_layout)
+
+        try:
+            with open('sp.json', 'r') as f:
+                data = json.load(f)
+        except json.JSONDecodeError:
+            data = {}
+
+        for item in data:
+            button = QPushButton(item)
+            self.scroll_layout.addWidget(button)
+
+        self.setWidget(self.scroll_widget)
 
 class Dialog(QDialog):
     def sanitize_input(self):
@@ -286,6 +331,7 @@ class Dialog(QDialog):
 
         self.save_password = Button("Add Password")
         self.layout.addWidget(self.save_password)
+
 
 
 
@@ -357,6 +403,10 @@ class SecuroPass():
     
     def delete_from_json(self, user) -> None:
         pass
+
+
+
+
 
 # --- Mainloop ---
 
