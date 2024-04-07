@@ -35,7 +35,7 @@ DIALOG_SIZE             = (260, 160)
 MAX_PASS_LEN            = 48
 PHRASE_MAX_LEN          = 32                                                     
 DEFAULT_PASS_LEN        = 16
-SCROLLAREA_WIDTH        = 185
+SCROLLAREA_WIDTH        = 175
 PASSWORD_DIALOG_SIZE    = (260, 50) 
 DEFAULT_CHECKBOX_STATE  = True                                            
 
@@ -260,12 +260,16 @@ class ScrollArea(QScrollArea):
         super(ScrollArea, self).__init__()
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Set the vertical scrollbar policy to be always visible
-        self.password_dialog = PasswordDialog()
 
         self.scroll_widget = QWidget()                         
         self.scroll_layout = QVBoxLayout()
         self.scroll_widget.setLayout(self.scroll_layout)
 
+        self.load_json_data()
+
+        self.setWidget(self.scroll_widget)
+
+    def load_json_data(self):
         try:
             with open('sp.json', 'r') as f:
                 data = json.load(f)
@@ -277,42 +281,23 @@ class ScrollArea(QScrollArea):
         for item in data:
             button = QPushButton(item)
             button.setFixedWidth(SCROLLAREA_WIDTH)
-            button.clicked.connect(self.password_dialog.exec)
             buttonList.append(('Button'+str(x), button))
             self.scroll_layout.addWidget(button)
             x+=1
-        
-        self.setWidget(self.scroll_widget)
 
-    """
-    This is poor practice, I have tried to make it better,
-    deleting the widget and recreating it with new data is slow, 
-    but when I tried to update the data in the widget, it did not work, 
-    so i resorted to this, the buttons and widget were being squished 
-    down no matter what i tried and it was not properly updating the
-    data.
-    """
+        """
+        for button_name, button in buttonList:
+            button.clicked.connect(self.)
+        """
+        
+
     def new_json_data(self):
         self.scroll_widget.deleteLater()
         self.scroll_widget = QWidget()                         
         self.scroll_layout = QVBoxLayout()
         self.scroll_widget.setLayout(self.scroll_layout)
 
-        try:
-            with open('sp.json', 'r') as f:
-                data = json.load(f)
-        except json.JSONDecodeError:
-            data = {}
-
-        buttonList = []
-        x=0
-        for item in data:
-            button = QPushButton(item)
-            button.setFixedWidth(SCROLLAREA_WIDTH)
-            button.clicked.connect(self.password_dialog.exec)
-            buttonList.append(('Button'+str(x), button))
-            self.scroll_layout.addWidget(button)
-            x+=1
+        self.load_json_data()
         
         self.setWidget(self.scroll_widget)
 
@@ -350,7 +335,7 @@ class PasswordDialog(QDialog):
     def __init__(self):
         super(PasswordDialog, self).__init__()
 
-        self.setWindowTitle("Password")
+        self.setWindowTitle("Show Password")
         self.setWindowIcon(QtGui.QIcon("icon.ico"))
         self.setFixedSize(*PASSWORD_DIALOG_SIZE)
 
@@ -358,7 +343,7 @@ class PasswordDialog(QDialog):
         self.layout.setSpacing(10)
         self.setLayout(self.layout)
 
-        self.show_password = Input("Show Password", readonly=True, max_len=MAX_PASS_LEN)
+        self.show_password = Input("Password will appear here...", readonly=True, max_len=MAX_PASS_LEN)
         self.layout.addWidget(self.show_password)
 
 
