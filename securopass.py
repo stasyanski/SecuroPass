@@ -33,9 +33,11 @@ import random
 WINDOW_SIZE             = (490, 400)
 DIALOG_SIZE             = (260, 160)                                               
 MAX_PASS_LEN            = 48
-PHRASE_MAX_LEN          = 32                                                        
+PHRASE_MAX_LEN          = 32                                                     
 DEFAULT_PASS_LEN        = 16
-DEFAULT_CHECKBOX_STATE  = True                                                  
+SCROLLAREA_WIDTH        = 185
+PASSWORD_DIALOG_SIZE    = (260, 50) 
+DEFAULT_CHECKBOX_STATE  = True                                            
 
 # --- Preferences values ---
 class Preferences:                                                     # Class to store the user preferences, rather than using global variables, much better practice
@@ -87,7 +89,7 @@ class MainWindow(QMainWindow):
 
     def setup_widgets(self):
         # --- Top add widgets - the greeting text ---
-        self.top.addWidget(Text("Hi (user), welcome to SecuroPass, free-and-open-source software to generate and manage your passwords.", align=Qt.AlignCenter, wrap=True))
+        self.top.addWidget(Text("Welcome to SecuroPass, free-and-open-source software to generate and manage your passwords.", align=Qt.AlignCenter, wrap=True))
 
         # --- Left add widgets - the left panel of the gui ---
         self.left.addWidget(Text("SecuroGen Password Generator:", align=Qt.AlignLeft, wrap=False))
@@ -258,10 +260,10 @@ class ScrollArea(QScrollArea):
         super(ScrollArea, self).__init__()
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Set the vertical scrollbar policy to be always visible
+        self.password_dialog = PasswordDialog()
 
-        # Initialize the scroll widget and layout
-        self.scroll_widget = QWidget()                              
-        self.scroll_layout = QVBoxLayout()                          
+        self.scroll_widget = QWidget()                         
+        self.scroll_layout = QVBoxLayout()
         self.scroll_widget.setLayout(self.scroll_layout)
 
         try:
@@ -270,10 +272,16 @@ class ScrollArea(QScrollArea):
         except json.JSONDecodeError:
             data = {}
 
+        buttonList = []
+        x=0
         for item in data:
             button = QPushButton(item)
+            button.setFixedWidth(SCROLLAREA_WIDTH)
+            button.clicked.connect(self.password_dialog.exec)
+            buttonList.append(('Button'+str(x), button))
             self.scroll_layout.addWidget(button)
-
+            x+=1
+        
         self.setWidget(self.scroll_widget)
 
     """
@@ -296,10 +304,16 @@ class ScrollArea(QScrollArea):
         except json.JSONDecodeError:
             data = {}
 
+        buttonList = []
+        x=0
         for item in data:
             button = QPushButton(item)
+            button.setFixedWidth(SCROLLAREA_WIDTH)
+            button.clicked.connect(self.password_dialog.exec)
+            buttonList.append(('Button'+str(x), button))
             self.scroll_layout.addWidget(button)
-
+            x+=1
+        
         self.setWidget(self.scroll_widget)
 
 class Dialog(QDialog):
@@ -331,6 +345,21 @@ class Dialog(QDialog):
 
         self.save_password = Button("Add Password")
         self.layout.addWidget(self.save_password)
+
+class PasswordDialog(QDialog):
+    def __init__(self):
+        super(PasswordDialog, self).__init__()
+
+        self.setWindowTitle("Password")
+        self.setWindowIcon(QtGui.QIcon("icon.ico"))
+        self.setFixedSize(*PASSWORD_DIALOG_SIZE)
+
+        self.layout = QVBoxLayout()
+        self.layout.setSpacing(10)
+        self.setLayout(self.layout)
+
+        self.show_password = Input("Show Password", readonly=True, max_len=MAX_PASS_LEN)
+        self.layout.addWidget(self.show_password)
 
 
 
