@@ -15,6 +15,14 @@ No more writing passwords on paper or forgetting your passwords... SecuroPass al
 - **Custom phrase:** choose to include a custom phrase in your password.
 - **Store passwords:** store passwords securely in the SecuroVault for later use.
 
+## Compatibility
+
+This app should work on:
+-**Windows**
+-**Linux**
+-**MacOS**
+...as all the libraries are cross-platform, however it has only been tested on Windows.
+
 ## Usage
 
 This app is quite straightforward and simple, but here is the breakdown on how to use it.
