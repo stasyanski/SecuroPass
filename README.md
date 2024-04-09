@@ -3,7 +3,9 @@
 
 No more writing passwords on paper or forgetting your passwords... SecuroPass allows one to generate a password that is secure based on their preference such as length of password and store the passwords securely in the vault to be retrieved for later use.
 
-![SecuroPass Preview](preview.png)
+<p align="center">
+  <img src="preview.png" alt="SecuroPass Preview">
+</p>
 
 
 ## Features
@@ -38,6 +40,8 @@ Generated Password: MyPassword_K/vXc2Z
 **Next**, in the window that opens, add the username, website, service you are saving the password for, and then right click on the 'Enter a password here...' below and press 'Add Password'.
 
 **Done!** Your password is saved for later use!
+
+
 ## How it functions
 
 - **Secrets** module is used to generate cryptographically secure random passwords
