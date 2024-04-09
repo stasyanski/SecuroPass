@@ -339,7 +339,8 @@ class SecuroPass():
     def generate_password(self):
         self.bank = ''
         if self.pref.uppercase is True:
-            self.bank += string.ascii_uppercase              # Add the uppercase letters to the bank if its true
+            self.bank += string.ascii_uppercase
+            self.bank += string.ascii_lowercase              # Add the uppercase letters to the bank if its true
         else:
             self.bank += string.ascii_lowercase
         if self.pref.symbols is True:
