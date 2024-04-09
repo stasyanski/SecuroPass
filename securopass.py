@@ -1,4 +1,25 @@
-# securopass.py includes the gui and the logic of the application
+#
+#*
+#**
+#*** This .py file contains both the logic and the GUI of the SecuroPass application.
+#*** The SecuroPass application is a password manager and generator.
+#*** The following modules are used in this application: PySide6, cryptography, json, secrets, string, keyring.
+#*** The two main classes are MainWindow and SecuroPass, mainwindow containing most of the GUI and SecuroPass containing logic.
+#*** Using keyring acts as a bridge to your operating systems keyring, which is where the key is stored securely.
+#*** Keyring stores in the following - Windows: Credential Manager, MacOS: Keychain, Linux: Secret Service API.
+#*** Fernet module is used for encryption and decryption, it is a symmetric encryption algorithm.
+#*** Secrets module securely generates random strings of text which are cryptographically secure.
+#*** To find the keyring password on your OS, search for "SecuroPass" in your respective manager.
+#**
+#*
+#
+
+#
+#*
+#** This software uses the MIT License, you are free to use as you wish, an I am not resposbile for any damage caused by this software.
+#** I am not resposible for any security concerns caused by this software, use at your own risk.
+#*
+#
 
 # --- Importing the required modules ---
 
@@ -26,7 +47,13 @@ from PySide6 import QtGui
 import os
 import sys
 import json
-import random
+import string
+import secrets
+import keyring
+
+# --- Get EXE Dir ---
+exe_dir = os.path.dirname(os.path.abspath(sys.argv[0]))         # Makes the working directory the directory where the exe is located
+os.chdir(exe_dir)                                               # For sp.js
 
 
 # --- CONSTANTS ---
@@ -40,7 +67,7 @@ PASSWORD_DIALOG_SIZE    = (260, 50)
 DEFAULT_CHECKBOX_STATE  = True                                            
 
 # --- Preferences values ---
-class Preferences:                                                     # Class to store the user preferences, rather than using global variables, much better practice
+class Preferences:                                                          # Class to store the user preferences, rather than using global variables, much better practice
     def __init__(self):
         self.uppercase  = DEFAULT_CHECKBOX_STATE
         self.symbols    = DEFAULT_CHECKBOX_STATE
@@ -60,7 +87,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("SecuroPass")
         self.setWindowIcon(QtGui.QIcon("icon.ico"))
-        self.setFixedSize(*WINDOW_SIZE)                                 # Hardcoded size of the window, * unpacks the tuple
+        self.setFixedSize(*WINDOW_SIZE)                                      # Hardcoded size of the window, * unpacks the tuple
 
         self.setup_layouts()
         self.setup_widgets()
@@ -72,7 +99,7 @@ class MainWindow(QMainWindow):
         self.bottom_left = QVBoxLayout()
         self.right = QVBoxLayout()
 
-        self.top.setContentsMargins(10, 10, 10, 10)                          # Set the margins of the layout
+        self.top.setContentsMargins(10, 10, 10, 10)                               # Set the margins of the layout
         self.left.setContentsMargins(10, 10, 10, 10)                         
         self.bottom_left.setContentsMargins(10, 10, 10, 10)                   
         self.right.setContentsMargins(10, 10, 10, 10)                        
@@ -83,9 +110,9 @@ class MainWindow(QMainWindow):
         self.grid.addLayout(self.bottom_left, 2, 0)                               # Where 2 is row and 0 is column
         self.grid.addLayout(self.right, 1, 1, 2, 1)                               # Where 2 is rowspan and 1 is columnspan         
 
-        self.widget = QWidget()                                              # Setting a central widget, acting as a container / parent for everything else (like a frame in tkinter)
+        self.widget = QWidget()                                                   # Setting a central widget, acting as a container / parent for everything else (like a frame in tkinter)
         self.widget.setLayout(self.grid)
-        self.setCentralWidget(self.widget)                                   # Set the central widget of the window, assigning the central widget as parent       
+        self.setCentralWidget(self.widget)                                        # Set the central widget of the window, assigning the central widget as parent       
 
     def setup_widgets(self):
         # --- Top add widgets - the greeting text ---
@@ -153,7 +180,7 @@ class MainWindow(QMainWindow):
     # --- Updates ---
     def sanitize_input(self):
         self.current_text = self.input_phrase.text()
-        self.sanitized_text = self.current_text.replace(" ", "")    # Replace spaces with nothing, not allow to store password with space
+        self.sanitized_text = self.current_text.replace(" ", "")                # Replace spaces with nothing, not allow to store password with space
         self.input_phrase.setText(self.sanitized_text)   
 
     def update_uppercase(self):
@@ -199,7 +226,7 @@ class Slider(QSlider):
         self.setOrientation(Qt.Horizontal)                  
 
 class Text(QLabel):
-    def __init__(self, text, align, wrap):    # Align the text to the left (default value), unless a value is specified 
+    def __init__(self, text, align, wrap):              
         super(Text, self).__init__()
         
         self.setText(text)                             
@@ -211,43 +238,9 @@ class Input(QLineEdit):
         super(Input, self).__init__()
         
         self.setPlaceholderText(text)                       
-        self.setReadOnly(readonly)                          # Password will be printed here so it is read only
-        self.setMaxLength(max_len)                   
-
-
-    """
-    from PySide6.QtGui import ( 
-        QKeySequence,
-        QKeyEvent,
-        )
-    """
-    
-    """
-    def keyPressEvent(self, event: QKeyEvent) -> None:          # Function to return none input if key event is key space
-        if self.space_allowed==False:
-            if event.key() == Qt.Key_Space:
-                return
-            if event.matches(QKeySequence.Paste):               # Return none if key sequence is ctrl+v
-                return
-        super(Input,self).keyPressEvent(event)
-    """
-    
-    """
-    def dropEvent(self, event):
-        if self.context_menu == False:
-            return
-        super(Input, self).dropEvent(event)
-
-    def dragEnterEvent(self, event):
-        if self.context_menu == False:                            No longer used context menu code
-            return
-        super(Input, self).dragEnterEvent(event)
-        
-    def contextMenuEvent(self, event):
-        if self.context_menu == False:
-            return
-        super(Input, self).contextMenuEvent(event)
-    """
+        self.setReadOnly(readonly)                      # Password will be printed here so it is read only
+        self.setMaxLength(max_len)  
+             
 
 class Button(QPushButton):
     def __init__(self, text):
@@ -259,7 +252,9 @@ class ScrollArea(QScrollArea):
     def __init__(self):
         super(ScrollArea, self).__init__()
 
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Set the vertical scrollbar policy to be always visible
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)       # Set the vertical scrollbar policy to be always visible
+
+        self.securo_pass = SecuroPass(None)
 
         self.scroll_widget = QWidget()                         
         self.scroll_layout = QVBoxLayout()
@@ -276,35 +271,35 @@ class ScrollArea(QScrollArea):
         except json.JSONDecodeError:
             data = {}
 
-        buttonList = []
-        x=0
-        for item in data:
-            button = QPushButton(item)
-            button.setFixedWidth(SCROLLAREA_WIDTH)
-            buttonList.append(('Button'+str(x), button))
-            self.scroll_layout.addWidget(button)
-            x+=1
+        for key, value in data.items():
+            self.user_field = Input(None, readonly=True, max_len=MAX_PASS_LEN)
+            self.user_field.setText(key)
+            self.user_field.setFixedWidth(SCROLLAREA_WIDTH)
+            self.scroll_layout.addWidget(Text("Username:", align=Qt.AlignLeft, wrap=False))
+            self.scroll_layout.addWidget(self.user_field)
 
-        """
-        for button_name, button in buttonList:
-            button.clicked.connect(self.)
-        """
-        
+            value = self.securo_pass.decrypt_from_json(key)                                          # Passing username as key to descypt the required password    
+            self.pass_field = Input(None, readonly=True, max_len=MAX_PASS_LEN)                       # None is the placeholder text
+            self.pass_field .setText(value)
+            self.pass_field .setFixedWidth(SCROLLAREA_WIDTH)
+            self.scroll_layout.addWidget(Text("Password:", align=Qt.AlignLeft, wrap=False))
+            self.scroll_layout.addWidget(self.pass_field)
+            self.scroll_layout.addWidget(QLabel(""))                                            # Bad practice, adds space between each password entry                 
 
     def new_json_data(self):
-        self.scroll_widget.deleteLater()
+        self.scroll_widget.deleteLater()                                                        # Delete the current scroll widget and create new, bad practice but currently the best implementation
         self.scroll_widget = QWidget()                         
         self.scroll_layout = QVBoxLayout()
         self.scroll_widget.setLayout(self.scroll_layout)
 
-        self.load_json_data()
+        self.load_json_data()                                                                   # Each time a new entry added the json loads                                  
         
         self.setWidget(self.scroll_widget)
 
 class Dialog(QDialog):
     def sanitize_input(self):
         self.current_text = self.input_pass.text()
-        self.sanitized_text = self.current_text.replace(" ", "")    # Replace spaces with nothing, not allow to store password with space
+        self.sanitized_text = self.current_text.replace(" ", "")                               # Replace spaces with nothing, not allow to store password with space
         self.input_pass.setText(self.sanitized_text)
     
     def __init__(self):
@@ -315,7 +310,7 @@ class Dialog(QDialog):
         self.setFixedSize(*DIALOG_SIZE)
 
         self.layout = QVBoxLayout()
-        self.layout.setSpacing(10)
+        self.layout.setSpacing(10)                                                    # Same as self._.setContentsMargins(10, 10, 10, 10)                              
         self.setLayout(self.layout)
 
         
@@ -331,21 +326,6 @@ class Dialog(QDialog):
         self.save_password = Button("Add Password")
         self.layout.addWidget(self.save_password)
 
-class PasswordDialog(QDialog):
-    def __init__(self):
-        super(PasswordDialog, self).__init__()
-
-        self.setWindowTitle("Show Password")
-        self.setWindowIcon(QtGui.QIcon("icon.ico"))
-        self.setFixedSize(*PASSWORD_DIALOG_SIZE)
-
-        self.layout = QVBoxLayout()
-        self.layout.setSpacing(10)
-        self.setLayout(self.layout)
-
-        self.show_password = Input("Password will appear here...", readonly=True, max_len=MAX_PASS_LEN)
-        self.layout.addWidget(self.show_password)
-
 
 
 
@@ -355,37 +335,28 @@ class PasswordDialog(QDialog):
 class SecuroPass():
     def __init__(self, pref):
         self.pref = pref
-        self.banks = {
-            'uppercase': "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz",
-            'lowercase': "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz",
-            'symbols': "!@#$%^&*()_+-=[]{}|;:,.<>?/!@#$%^&*()_+-=[]{}|;:,.<>?/",
-            'numbers': "012345678901234567890123456789"
-        }
-        self.key = None
-        self.cipher_suite = None
-
+    
     def generate_password(self):
+        self.bank = ''
         if self.pref.uppercase is True:
-            self.bank = self.banks['uppercase']
+            self.bank += string.ascii_uppercase              # Add the uppercase letters to the bank if its true
         else:
-            self.bank = self.banks['lowercase']
-
+            self.bank += string.ascii_lowercase
         if self.pref.symbols is True:
-            self.bank += self.banks['symbols']
-
+            self.bank += string.punctuation
         if self.pref.numbers is True:
-            self.bank += self.banks['numbers']
+            self.bank += string.digits
 
-        password = "".join(random.sample(self.bank, self.pref.length))
+        self.password = ''.join(secrets.choice(self.bank) for _ in range(self.pref.length))      # Generate a password of the specified length using secrets module and the bank         
 
         if self.pref.phrase:
-            password = self.pref.phrase + '_' + password
-            password = password[0:self.pref.length]
-        return password
+            self.password = self.pref.phrase + '_' + self.password
+            self.password = self.password[0:self.pref.length]                                         # If phrase is chosen, limit password length to the length preference
+        return self.password
 
     def encrypt_to_json(self, user, password: str) -> None:
         self.key = Fernet.generate_key()
-        os.environ[user] = self.key.decode()
+        keyring.set_password("SecuroPass", user, self.key.decode())
         self.cipher = Fernet(self.key)
         
         encrypted_password = self.cipher.encrypt(password.encode()).decode()
@@ -402,7 +373,10 @@ class SecuroPass():
             json.dump(data, f)
 
     def decrypt_from_json(self, user) -> str:
-        self.key = os.environ.get(user).encode()
+        try:
+            self.key = keyring.get_password("SecuroPass", user).encode()
+        except:
+            return None
         self.cipher = Fernet(self.key)
 
         with open('sp.json', 'r') as f:
@@ -416,7 +390,8 @@ class SecuroPass():
             return None
     
     def delete_from_json(self, user) -> None:
-        pass
+        keyring.delete_password("SecurePass", user)
+        # To be completed
 
 
 
