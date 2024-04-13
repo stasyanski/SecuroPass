@@ -99,17 +99,20 @@ class MainWindow(QMainWindow):
         self.left = QVBoxLayout()
         self.bottom_left = QVBoxLayout()
         self.right = QVBoxLayout()
+        self.bottom_right = QHBoxLayout()
 
         self.top.setContentsMargins(10, 10, 10, 10)                               # Set the margins of the layout
         self.left.setContentsMargins(10, 10, 10, 10)                         
         self.bottom_left.setContentsMargins(10, 10, 10, 10)                   
-        self.right.setContentsMargins(10, 10, 10, 10)                        
+        self.right.setContentsMargins(10, 10, 10, 10)
+        self.bottom_right.setContentsMargins(10, 10, 10, 10)                     
 
         self.grid = QGridLayout()
-        self.grid.addLayout(self.top, 0, 0, 1, 2)                                 # Where 1 is rowspan and 2 is columnspan 
-        self.grid.addLayout(self.left, 1, 0)                                      # Where 1 is row and 0 is column          
-        self.grid.addLayout(self.bottom_left, 2, 0)                               # Where 2 is row and 0 is column
-        self.grid.addLayout(self.right, 1, 1, 2, 1)                               # Where 2 is rowspan and 1 is columnspan         
+        self.grid.addLayout(self.top,           0, 0, 1, 2)                                 # Where 1 is rowspan and 2 is columnspan 
+        self.grid.addLayout(self.left,          1, 0, 8, 1)                                      # Where 1 is row and 0 is column          
+        self.grid.addLayout(self.bottom_left,   9, 0, 2, 1)                               # Where 2 is row and 0 is column
+        self.grid.addLayout(self.right,         1, 1, 9, 1)                               # Where 2 is rowspan and 1 is columnspan
+        self.grid.addLayout(self.bottom_right,  10, 1, 1, 1)     
 
         self.widget = QWidget()                                                   # Setting a central widget, acting as a container / parent for everything else (like a frame in tkinter)
         self.widget.setLayout(self.grid)
@@ -157,8 +160,13 @@ class MainWindow(QMainWindow):
         self.scroll_area = ScrollArea()
         self.right.addWidget(self.scroll_area)
 
-        self.add_password = (Button("Add a password to SecuroVault"))
-        self.right.addWidget(self.add_password)
+        # --- Bottomright add widgets - the bottom right panel of the gui ---
+        self.add_password = (Button("Add a password"))
+        self.bottom_right.addWidget(self.add_password)
+
+        self.delete_password = (Button("Delete"))
+        self.bottom_right.addWidget(self.delete_password)
+
     
     
     
@@ -401,10 +409,17 @@ class SecuroPass():
             return password
         else:
             return Error("Sorry, could not be decrypted, ensure the key is saved in the keyring as needed.")
-    
-    def delete_from_json(self, user) -> None:
-        keyring.delete_password("SecurePass", user)
-        # To be completed
+
+    def delete_password(self, user):
+        keyring.delete_password("SecuroPass", user)
+        with open('sp.json', 'r') as f:
+            data = json.load(f)
+
+        if user in data:
+            del data[user]
+
+        with open('sp.json', 'w') as f:
+            json.dump(data, f)
 
 
 
