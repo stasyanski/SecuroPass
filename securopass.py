@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
     QGridLayout,
+    QMessageBox,
     QScrollArea,
     QVBoxLayout,
     QHBoxLayout,
@@ -209,6 +210,14 @@ class MainWindow(QMainWindow):
 
 # --- Other widgets ---
 
+class Error(QMessageBox):
+    def __init__(self, text):
+        super(Error, self).__init__()
+
+        self.setWindowTitle("Error")
+        self.setIcon(QMessageBox.Critical)                  
+        self.setText(text)
+
 class Checkbox(QCheckBox):
     def __init__(self, text):
         super(Checkbox, self).__init__()
@@ -280,7 +289,10 @@ class ScrollArea(QScrollArea):
 
             value = self.securo_pass.decrypt_from_json(key)                                          # Passing username as key to descypt the required password    
             self.pass_field = Input(None, readonly=True, max_len=MAX_PASS_LEN)                       # None is the placeholder text
-            self.pass_field .setText(value)
+            try:
+                self.pass_field .setText(value)
+            except:
+                self.pass_field .setText("Error: Password not found.")
             self.pass_field .setFixedWidth(SCROLLAREA_WIDTH)
             self.scroll_layout.addWidget(Text("Password:", align=Qt.AlignLeft, wrap=False))
             self.scroll_layout.addWidget(self.pass_field)
@@ -377,7 +389,7 @@ class SecuroPass():
         try:
             self.key = keyring.get_password("SecuroPass", user).encode()
         except:
-            return None
+            return Error("Sorry, password not found, ensure the password is saved in the correct file.")
         self.cipher = Fernet(self.key)
 
         with open('sp.json', 'r') as f:
@@ -388,7 +400,7 @@ class SecuroPass():
             password = self.cipher.decrypt(encrypted_password.encode()).decode()
             return password
         else:
-            return None
+            return Error("Sorry, could not be decrypted, ensure the key is saved in the keyring as needed.")
     
     def delete_from_json(self, user) -> None:
         keyring.delete_password("SecurePass", user)
